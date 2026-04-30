@@ -418,6 +418,14 @@
     .main-grid { grid-template-columns: 1fr; }
     .fish-panel { grid-column: 1; }
   }
+  @media (max-width: 440px) {
+    .tank-panel,
+    .sliders-panel,
+    .fish-panel {
+      padding:15px;
+    }
+  }
+
 </style>
 </head>
 <body>
@@ -581,7 +589,7 @@ const faceRight  = document.getElementById('faceRight');
 const faceBottom = document.getElementById('faceBottom');
 
 // ─── TANK RENDER ─────────────────────────────────────────────────────────────
-const TANK_MAX_PX = 260; // max display dimension
+const TANK_MAX_PX = 160; // max display dimension
 
 function updateTank() {
   const wCm = +wSlider.value;
