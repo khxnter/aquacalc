@@ -5,10 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AquaCalc — Fish Tank Planner</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-
-<link rel="icon" type="image/png" href="fav.png">
-<link rel="apple-touch-icon" sizes="72x72" href="fav.png" />
-
 <style>
   :root {
     --deep: #03111f;
@@ -17,14 +13,13 @@
     --glow: #00c8ff;
     --glow2: #00ffcc;
     --accent: #ff6b35;
+    --amazon: #ff9900;
     --text: #d0eeff;
     --muted: #5c8aaa;
     --glass: rgba(0,200,255,0.06);
     --glass-border: rgba(0,200,255,0.18);
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   body {
     background: var(--deep);
     color: var(--text);
@@ -36,180 +31,89 @@
     padding: 30px 20px 60px;
     overflow-x: hidden;
   }
-
-  /* Animated bubbles background */
   body::before {
     content: '';
-    position: fixed;
-    inset: 0;
+    position: fixed; inset: 0;
     background:
       radial-gradient(ellipse at 20% 80%, rgba(0,80,160,0.3) 0%, transparent 50%),
       radial-gradient(ellipse at 80% 20%, rgba(0,160,120,0.15) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: 0;
+    pointer-events: none; z-index: 0;
   }
-
   .bubble {
-    position: fixed;
-    border-radius: 50%;
+    position: fixed; border-radius: 50%;
     background: radial-gradient(circle at 30% 30%, rgba(0,200,255,0.4), rgba(0,200,255,0.05));
     border: 1px solid rgba(0,200,255,0.2);
-    animation: rise linear infinite;
-    pointer-events: none;
-    z-index: 0;
+    animation: rise linear infinite; pointer-events: none; z-index: 0;
   }
   @keyframes rise {
-    0% { transform: translateY(110vh) scale(1); opacity: 0; }
-    10% { opacity: 1; }
-    90% { opacity: 0.6; }
+    0%   { transform: translateY(110vh) scale(1);   opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 0.6; }
     100% { transform: translateY(-10vh) scale(1.1); opacity: 0; }
   }
-
-  header {
-    position: relative;
-    z-index: 1;
-    text-align: center;
-    margin-bottom: 36px;
-  }
-
+  header { position: relative; z-index: 1; text-align: center; margin-bottom: 36px; }
   header h1 {
     font-family: 'Playfair Display', serif;
     font-size: clamp(2rem, 5vw, 3.2rem);
-    color: #fff;
-    letter-spacing: 2px;
+    color: #fff; letter-spacing: 2px;
     text-shadow: 0 0 30px rgba(0,200,255,0.5);
   }
-
   header h1 span { color: var(--glow); }
-
-  header p {
-    margin-top: 8px;
-    color: var(--muted);
-    font-size: 0.78rem;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
+  header p { margin-top: 8px; color: var(--muted); font-size: 0.78rem; letter-spacing: 2px; text-transform: uppercase; }
 
   .main-grid {
-    position: relative;
-    z-index: 1;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 28px;
-    width: 100%;
-    max-width: 1100px;
+    position: relative; z-index: 1;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 28px; width: 100%; max-width: 1100px;
   }
-
-  /* ── TANK PANEL ── */
-  .tank-panel {
-    background: var(--glass);
-    border: 1px solid var(--glass-border);
-    border-radius: 16px;
-    padding: 28px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    backdrop-filter: blur(4px);
+  .panel {
+    background: var(--glass); border: 1px solid var(--glass-border);
+    border-radius: 16px; padding: 28px; backdrop-filter: blur(4px);
   }
+  .panel h2 { font-family: 'Playfair Display', serif; font-size: 1.1rem; margin-bottom: 22px; letter-spacing: 1px; }
+  .full-width { grid-column: 1 / -1; }
 
-  .tank-panel h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.1rem;
-    margin-bottom: 22px;
-    color: var(--glow);
-    letter-spacing: 1px;
-    align-self: flex-start;
-  }
-
-  /* 3-D tank wrapper */
-  .tank-3d-wrapper {
-    perspective: 800px;
-    margin-bottom: 24px;
-  }
-
+  /* ── TANK ── */
+  .tank-panel { display: flex; flex-direction: column; align-items: center; }
+  .tank-panel h2 { color: var(--glow); align-self: flex-start; }
+  .tank-3d-wrapper { perspective: 800px; margin-bottom: 24px; }
   .tank-scene {
-    position: relative;
-    transform-style: preserve-3d;
+    position: relative; transform-style: preserve-3d;
     transform: rotateX(8deg) rotateY(-8deg);
     transition: width 0.4s, height 0.4s;
   }
-
-  /* Tank faces */
   .tank-face {
-    position: absolute;
-    border: 2px solid rgba(0,200,255,0.5);
-    background: rgba(0,80,160,0.25);
-    backdrop-filter: blur(2px);
-    transition: all 0.4s;
+    position: absolute; border: 2px solid rgba(0,200,255,0.5);
+    background: rgba(0,80,160,0.25); backdrop-filter: blur(2px); transition: all 0.4s;
   }
-
   .tank-face.front {
     background: linear-gradient(160deg, rgba(0,150,255,0.22) 0%, rgba(0,60,120,0.35) 100%);
     border-color: rgba(0,200,255,0.7);
     box-shadow: inset 0 0 40px rgba(0,200,255,0.08), 0 0 20px rgba(0,200,255,0.15);
-    border-radius: 4px 4px 2px 2px;
-    overflow: hidden;
+    border-radius: 4px 4px 2px 2px; overflow: hidden;
   }
-
-  /* Water shimmer */
   .tank-face.front::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 18px,
-      rgba(0,200,255,0.04) 18px,
-      rgba(0,200,255,0.04) 19px
-    );
+    content: ''; position: absolute; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 18px, rgba(0,200,255,0.04) 18px, rgba(0,200,255,0.04) 19px);
     animation: shimmer 4s linear infinite;
   }
-
-  @keyframes shimmer {
-    0% { background-position: 0 0; }
-    100% { background-position: 0 40px; }
-  }
-
-  /* Gravel */
   .tank-face.front::before {
-    content: '';
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 14%;
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 14%;
     background: linear-gradient(0deg, rgba(80,50,20,0.7), rgba(100,70,30,0.3));
-    border-top: 1px solid rgba(200,150,50,0.3);
-    z-index: 1;
+    border-top: 1px solid rgba(200,150,50,0.3); z-index: 1;
   }
-
-  .tank-face.top {
-    background: linear-gradient(180deg, rgba(0,200,255,0.25), rgba(0,100,200,0.15));
-    border-color: rgba(0,220,255,0.5);
-    border-radius: 2px;
-  }
-
-  .tank-face.right {
-    background: linear-gradient(90deg, rgba(0,60,120,0.4), rgba(0,80,160,0.2));
-    border-color: rgba(0,150,200,0.4);
-  }
-
-  .tank-face.bottom {
-    background: rgba(20,40,60,0.7);
-    border-color: rgba(0,100,150,0.4);
-  }
-
-  /* Mini fish inside tank */
+  @keyframes shimmer { 0% { background-position: 0 0; } 100% { background-position: 0 40px; } }
+  .tank-face.top    { background: linear-gradient(180deg, rgba(0,200,255,0.25), rgba(0,100,200,0.15)); border-color: rgba(0,220,255,0.5); }
+  .tank-face.right  { background: linear-gradient(90deg, rgba(0,60,120,0.4), rgba(0,80,160,0.2)); border-color: rgba(0,150,200,0.4); }
+  .tank-face.bottom { background: rgba(20,40,60,0.7); border-color: rgba(0,100,150,0.4); }
   .fish-icon {
-    position: absolute;
-    font-size: 16px;
-    animation: swim 6s ease-in-out infinite;
-    z-index: 2;
+    position: absolute; font-size: 16px;
+    animation: swim 6s ease-in-out infinite; z-index: 2;
     filter: drop-shadow(0 0 4px rgba(0,200,255,0.5));
   }
   .fish-icon:nth-child(2) { animation-delay: -2s; top: 30%; left: 20%; }
   .fish-icon:nth-child(3) { animation-delay: -4s; top: 55%; left: 55%; font-size: 12px; }
   .fish-icon:nth-child(4) { animation-delay: -1s; top: 20%; left: 60%; font-size: 20px; }
-
   @keyframes swim {
     0%   { transform: translateX(0px) scaleX(1); }
     45%  { transform: translateX(40px) scaleX(1); }
@@ -217,231 +121,110 @@
     95%  { transform: translateX(0px) scaleX(-1); }
     100% { transform: translateX(0px) scaleX(1); }
   }
-
-  /* Volume badge */
   .volume-badge {
     background: linear-gradient(135deg, var(--mid), var(--surface));
-    border: 1px solid var(--glass-border);
-    border-radius: 10px;
-    padding: 12px 24px;
-    text-align: center;
-    width: 100%;
-    margin-top: 8px;
+    border: 1px solid var(--glass-border); border-radius: 10px;
+    padding: 12px 24px; text-align: center; width: 100%; margin-top: 8px;
   }
+  .volume-badge .vol-num { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--glow); text-shadow: 0 0 20px rgba(0,200,255,0.4); }
+  .volume-badge .vol-label { font-size: 0.7rem; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
 
-  .volume-badge .vol-num {
-    font-family: 'Playfair Display', serif;
-    font-size: 2rem;
-    color: var(--glow);
-    text-shadow: 0 0 20px rgba(0,200,255,0.4);
-  }
-
-  .volume-badge .vol-label {
-    font-size: 0.7rem;
-    color: var(--muted);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-
-  /* ── SLIDERS PANEL ── */
-  .sliders-panel {
-    background: var(--glass);
-    border: 1px solid var(--glass-border);
-    border-radius: 16px;
-    padding: 28px;
-    backdrop-filter: blur(4px);
-  }
-
-  .sliders-panel h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.1rem;
-    margin-bottom: 24px;
-    color: var(--glow2);
-    letter-spacing: 1px;
-  }
-
-  .slider-group {
-    margin-bottom: 24px;
-  }
-
-  .slider-label-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 10px;
-  }
-
-  .slider-label-row .dim-name {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: var(--muted);
-  }
-
-  .slider-label-row .dim-value {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.3rem;
-    color: #fff;
-  }
-
-  .slider-label-row .dim-unit {
-    font-size: 0.7rem;
-    color: var(--muted);
-    margin-left: 3px;
-  }
-
-  input[type=range] {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    height: 4px;
-    border-radius: 2px;
-    outline: none;
-    cursor: pointer;
-    transition: opacity 0.2s;
-  }
-
+  /* ── SLIDERS ── */
+  .sliders-panel h2 { color: var(--glow2); }
+  .slider-group { margin-bottom: 24px; }
+  .slider-label-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+  .dim-name  { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); }
+  .dim-value { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: #fff; }
+  .dim-unit  { font-size: 0.7rem; color: var(--muted); margin-left: 3px; }
+  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 4px; border-radius: 2px; outline: none; cursor: pointer; }
   input[type=range].width-slider  { background: linear-gradient(90deg, var(--glow), var(--mid)); }
   input[type=range].depth-slider  { background: linear-gradient(90deg, var(--glow2), var(--mid)); }
   input[type=range].height-slider { background: linear-gradient(90deg, #a78bfa, var(--mid)); }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #fff; border: 3px solid var(--glow); box-shadow: 0 0 10px rgba(0,200,255,0.5); }
+  input[type=range].depth-slider::-webkit-slider-thumb  { border-color: var(--glow2); }
+  input[type=range].height-slider::-webkit-slider-thumb { border-color: #a78bfa; }
+  .slider-ticks { display: flex; justify-content: space-between; margin-top: 5px; font-size: 0.6rem; color: var(--muted); }
 
-  input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 18px; height: 18px;
-    border-radius: 50%;
-    background: #fff;
-    border: 3px solid var(--glow);
-    box-shadow: 0 0 10px rgba(0,200,255,0.5);
-    transition: box-shadow 0.2s;
-  }
-
-  input[type=range].depth-slider::-webkit-slider-thumb { border-color: var(--glow2); box-shadow: 0 0 10px rgba(0,255,200,0.5); }
-  input[type=range].height-slider::-webkit-slider-thumb { border-color: #a78bfa; box-shadow: 0 0 10px rgba(167,139,250,0.5); }
-
-  input[type=range]:hover::-webkit-slider-thumb { box-shadow: 0 0 18px rgba(0,200,255,0.8); }
-
-  .slider-ticks {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 5px;
-    font-size: 0.6rem;
-    color: var(--muted);
-  }
-
-  /* ── FISH LIST PANEL (full width) ── */
-  .fish-panel {
-    grid-column: 1 / -1;
-    background: var(--glass);
-    border: 1px solid var(--glass-border);
-    border-radius: 16px;
-    padding: 28px;
-    backdrop-filter: blur(4px);
-  }
-
-  .fish-panel h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.1rem;
-    margin-bottom: 6px;
-    color: var(--accent);
-    letter-spacing: 1px;
-  }
-
-  .fish-panel .subtitle {
-    font-size: 0.7rem;
-    color: var(--muted);
-    margin-bottom: 22px;
-    letter-spacing: 1px;
-  }
-
-  .fish-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 14px;
-  }
-
+  /* ── FISH LIST ── */
+  .fish-panel h2 { color: var(--accent); }
+  .subtitle { font-size: 0.7rem; color: var(--muted); margin-bottom: 22px; letter-spacing: 1px; margin-top: -10px; }
+  .fish-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
   .fish-card {
     background: linear-gradient(135deg, rgba(0,60,100,0.5), rgba(0,30,60,0.6));
-    border: 1px solid rgba(0,200,255,0.12);
-    border-radius: 12px;
-    padding: 14px 16px;
+    border: 1px solid rgba(0,200,255,0.12); border-radius: 12px; padding: 14px 16px;
     transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
     animation: fadeIn 0.3s ease both;
   }
-
-  .fish-card:hover {
-    transform: translateY(-3px);
-    border-color: rgba(0,200,255,0.4);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  .fish-card .fish-emoji { font-size: 1.6rem; margin-bottom: 6px; }
-
-  .fish-card .fish-name {
-    font-family: 'Playfair Display', serif;
-    font-size: 1rem;
-    color: #fff;
-    margin-bottom: 4px;
-  }
-
-  .fish-card .fish-meta {
-    font-size: 0.65rem;
-    color: var(--muted);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    line-height: 1.7;
-  }
-
-  .fish-card .fish-meta span {
-    display: inline-block;
-    background: rgba(0,200,255,0.08);
-    border: 1px solid rgba(0,200,255,0.15);
-    border-radius: 4px;
-    padding: 1px 6px;
-    margin: 2px 2px 0 0;
-  }
-
-  .empty-state {
-    text-align: center;
-    padding: 40px;
-    color: var(--muted);
-  }
-
+  .fish-card:hover { transform: translateY(-3px); border-color: rgba(0,200,255,0.4); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+  .fish-emoji { font-size: 1.6rem; margin-bottom: 6px; }
+  .fish-name  { font-family: 'Playfair Display', serif; font-size: 1rem; color: #fff; margin-bottom: 4px; }
+  .fish-meta  { font-size: 0.65rem; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; line-height: 1.7; }
+  .fish-meta span { display: inline-block; background: rgba(0,200,255,0.08); border: 1px solid rgba(0,200,255,0.15); border-radius: 4px; padding: 1px 6px; margin: 2px 2px 0 0; }
+  .empty-state { text-align: center; padding: 40px; color: var(--muted); grid-column: 1/-1; }
   .empty-state .big { font-size: 3rem; margin-bottom: 12px; }
   .empty-state p { font-size: 0.8rem; letter-spacing: 1px; }
 
+  /* ── EQUIPMENT PANEL ── */
+  .equipment-panel h2 { color: var(--amazon); margin-bottom: 6px; }
+  .eq-tier-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, rgba(255,153,0,0.15), rgba(255,153,0,0.05));
+    border: 1px solid rgba(255,153,0,0.35);
+    border-radius: 20px; padding: 4px 14px;
+    font-size: 0.68rem; color: var(--amazon);
+    letter-spacing: 1px; text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .eq-columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+  }
+  .eq-slot {
+    background: linear-gradient(135deg, rgba(40,25,0,0.45), rgba(15,10,0,0.6));
+    border: 1px solid rgba(255,153,0,0.18);
+    border-radius: 14px; padding: 18px;
+    display: flex; flex-direction: column; gap: 8px;
+    animation: fadeIn 0.35s ease both;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+  }
+  .eq-slot:hover { transform: translateY(-3px); border-color: rgba(255,153,0,0.45); box-shadow: 0 8px 28px rgba(0,0,0,0.5); }
+  .eq-slot-header { display: flex; align-items: center; gap: 10px; }
+  .eq-slot-icon { font-size: 1.4rem; }
+  .eq-slot-category { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 2px; color: var(--amazon); }
+  .eq-slot-name { font-family: 'Playfair Display', serif; font-size: 0.97rem; color: #fff; line-height: 1.3; }
+  .eq-slot-desc { font-size: 0.67rem; color: var(--muted); line-height: 1.55; }
+  .eq-slot-btn {
+    margin-top: auto; display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 15px; align-self: flex-start;
+    background: linear-gradient(135deg, #ff9900, #e07800);
+    color: #000; font-family: 'Space Mono', monospace;
+    font-size: 0.67rem; font-weight: 700; letter-spacing: 1px;
+    text-decoration: none; border-radius: 7px; text-transform: uppercase;
+    transition: filter 0.2s, transform 0.1s;
+  }
+  .eq-slot-btn:hover { filter: brightness(1.15); transform: scale(1.03); }
+  .eq-slot-btn svg { width: 11px; height: 11px; fill: #000; flex-shrink: 0; }
+  /* Placeholder state (no link yet) */
+  .eq-slot.placeholder { border-style: dashed; border-color: rgba(255,153,0,0.25); opacity: 0.7; }
+  .eq-slot.placeholder .eq-slot-btn { background: rgba(255,153,0,0.15); color: var(--amazon); border: 1px dashed rgba(255,153,0,0.4); pointer-events: none; }
+  .affiliate-note { font-size: 0.6rem; color: var(--muted); opacity: 0.55; text-align: center; margin-top: 12px; }
+
   @media (max-width: 700px) {
     .main-grid { grid-template-columns: 1fr; }
-    .fish-panel { grid-column: 1; }
+    .full-width { grid-column: 1; }
   }
-  @media (max-width: 440px) {
-    .tank-panel,
-    .sliders-panel,
-    .fish-panel {
-      padding:15px;
-    }
-  }
-
 </style>
 </head>
 <body>
 
-<!-- Background bubbles -->
 <script>
   for (let i = 0; i < 18; i++) {
     const b = document.createElement('div');
     b.className = 'bubble';
-    const size = 4 + Math.random() * 14;
-    b.style.cssText = `
-      width:${size}px; height:${size}px;
-      left:${Math.random()*100}%;
-      animation-duration:${8+Math.random()*14}s;
-      animation-delay:-${Math.random()*20}s;
-    `;
+    const s = 4 + Math.random() * 14;
+    b.style.cssText = `width:${s}px;height:${s}px;left:${Math.random()*100}%;animation-duration:${8+Math.random()*14}s;animation-delay:-${Math.random()*20}s;`;
     document.body.appendChild(b);
   }
 </script>
@@ -453,12 +236,11 @@
 
 <div class="main-grid">
 
-  <!-- TANK VISUALISATION -->
-  <div class="tank-panel">
+  <!-- TANK PREVIEW -->
+  <div class="panel tank-panel">
     <h2>Tank Preview</h2>
     <div class="tank-3d-wrapper">
       <div class="tank-scene" id="tankScene">
-        <!-- faces populated by JS -->
         <div class="tank-face front" id="faceFront">
           <div class="fish-icon">🐠</div>
           <div class="fish-icon">🐟</div>
@@ -470,15 +252,14 @@
       </div>
     </div>
     <div class="volume-badge">
-      <div class="vol-num" id="volNum">0</div>
+      <div class="vol-num" id="volNum">63</div>
       <div class="vol-label">litres &nbsp;·&nbsp; <span id="volGal">0</span> US gal</div>
     </div>
   </div>
 
   <!-- SLIDERS -->
-  <div class="sliders-panel">
+  <div class="panel sliders-panel">
     <h2>Tank Dimensions</h2>
-
     <div class="slider-group">
       <div class="slider-label-row">
         <span class="dim-name">↔ Width</span>
@@ -487,7 +268,6 @@
       <input type="range" class="width-slider" id="widthSlider" min="20" max="200" value="60">
       <div class="slider-ticks"><span>20</span><span>60</span><span>100</span><span>150</span><span>200</span></div>
     </div>
-
     <div class="slider-group">
       <div class="slider-label-row">
         <span class="dim-name">⬤ Depth</span>
@@ -496,7 +276,6 @@
       <input type="range" class="depth-slider" id="depthSlider" min="15" max="80" value="30">
       <div class="slider-ticks"><span>15</span><span>30</span><span>50</span><span>65</span><span>80</span></div>
     </div>
-
     <div class="slider-group">
       <div class="slider-label-row">
         <span class="dim-name">↕ Height</span>
@@ -508,189 +287,521 @@
   </div>
 
   <!-- FISH LIST -->
-  <div class="fish-panel">
+  <div class="panel fish-panel full-width">
     <h2>Compatible Fish</h2>
     <p class="subtitle" id="fishSubtitle">Adjust your tank dimensions to see stocking options</p>
     <div class="fish-grid" id="fishGrid"></div>
   </div>
 
+  <!-- EQUIPMENT RECOMMENDATIONS -->
+  <div class="panel equipment-panel full-width">
+    <h2>Recommended Equipment</h2>
+    <div class="eq-tier-badge" id="eqTierBadge">Select a tank size above</div>
+    <div class="eq-columns" id="eqColumns"></div>
+    <p class="affiliate-note">* Links are affiliate links — we may earn a small commission at no extra cost to you.</p>
+  </div>
+
 </div>
 
 <script>
-// ─── FISH DATABASE ───────────────────────────────────────────────────────────
-// minWidth, minDepth, minHeight all in cm; minLitres as calculated minimum
+// =============================================================================
+//  ██████╗ ██████╗  ██████╗ ██████╗ ██╗   ██╗ ██████╗████████╗███████╗
+//  ██╔══██╗██╔══██╗██╔═══██╗██╔══██╗██║   ██║██╔════╝╚══██╔══╝██╔════╝
+//  ██████╔╝██████╔╝██║   ██║██║  ██║██║   ██║██║        ██║   ███████╗
+//  ██╔═══╝ ██╔══██╗██║   ██║██║  ██║██║   ██║██║        ██║   ╚════██║
+//  ██║     ██║  ██║╚██████╔╝██████╔╝╚██████╔╝╚██████╗   ██║   ███████║
+//  ╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚═════╝  ╚═════╝  ╚═════╝   ╚═╝   ╚══════╝
+//
+//  AFFILIATE PRODUCT SLOTS
+//  ─────────────────────────────────────────────────────────────────────
+//  Each size tier has slots for: filter, heater, lighting, extras (×2)
+//
+//  To add a product:
+//    1. Replace the `name` with the product name
+//    2. Replace the `desc` with a short description (1–2 sentences)
+//    3. Replace the `url`  with your full Amazon affiliate link
+//    4. Keep `placeholder: false` once the slot is filled
+//
+//  Leave `placeholder: true` for any slot you haven't filled yet —
+//  it will show a "Coming soon" button instead of a broken link.
+// =============================================================================
+
+const TIERS = [
+
+  // ── 0–30 LITRES ──────────────────────────────────────────────────────────
+  {
+    label: '0 – 30 Litres',
+    min: 0, max: 30,
+    slots: [
+      {
+        icon: '🌀', category: 'Filter — Canister',
+        name: 'Fluval 107 External Canister Filter',
+        desc: 'Compact canister rated for tanks up to 100 L. Whisper-quiet with 3-stage filtration and easy lift-out media baskets — surprisingly powerful for a nano setup.',
+        url:  'https://amzn.to/3QyQ9nY',
+        placeholder: false,
+      },
+      {
+        icon: '🌀', category: 'Filter — Hang-on-Back',
+        name: 'Fluval AC20 Power Filter',
+        desc: 'Hang-on-back filter with 5-stage filtration and a unique re-filtration tube. Easy to maintain and virtually silent — a top choice for nano and desktop tanks.',
+        url:  'https://amzn.to/4d2pCqD',
+        placeholder: false,
+      },
+      {
+        icon: '🌡️', category: 'Heater — Submersible',
+        name: 'Fluval E100 Electronic Heater (100 W)',
+        desc: 'LCD dual-temperature display with fish-fever and low-temp alerts. Precise to within 0.5 °C and shatter-resistant — ideal for tanks up to 50 L.',
+        url:  'https://amzn.to/4t5Kfba',
+        placeholder: false,
+      },
+      {
+        icon: '🌡️', category: 'Heater — Submersible',
+        name: 'Eheim Jager Aquarium Thermostat Heater 50W',
+        desc: 'German-engineered precision glass heater with recalibration dial. Thermo-safety cut-out and "out-of-water" auto-shutoff make it one of the most reliable nano heaters available.',
+        url:  'https://amzn.to/4f0fTn4',
+        placeholder: false,
+      },
+      {
+        icon: '💡', category: 'Lighting',
+        name: 'Fluval Aquasky LED 38–63 cm',
+        desc: 'Full-spectrum planted/community LED with Bluetooth app control, sunrise/sunset simulation and moon mode. Perfect length for most nano and desktop tanks. (Check width fo aquarium so it fits.)',
+        url:  'https://amzn.to/3QW97EZ',
+        placeholder: false,
+      },
+      {
+        icon: '🧪', category: 'Extra — Water Treatment',
+        name: 'Seachem Prime Concentrated Dechlorinator',
+        desc: 'Industry-standard dechlorinator and ammonia detoxifier. A single small dose treats tap water and protects fish during cycling — the one bottle every tank needs.',
+        url:  'https://amzn.to/4n2LGWt',
+        placeholder: false,
+      },
+      {
+        icon: '🪨', category: 'Extra — Substrate',
+        name: 'Fluval Plant & Shrimp Stratum (2 kg)',
+        desc: 'Volcanic mineral substrate that softens water and lowers pH — ideal for planted nano tanks and shrimp. Promotes strong root growth without clouding the water.',
+        url:  'https://amzn.to/4wih3AS',
+        placeholder: false,
+      },
+    ],
+  },
+
+  // ── 30–60 LITRES ─────────────────────────────────────────────────────────
+  {
+    label: '30 – 60 Litres',
+    min: 30, max: 60,
+    slots: [
+      {
+        icon: '🌀', category: 'Filter — Canister',
+        name: 'Fluval 107 External Canister Filter',
+        desc: 'Rated up to 100 L with a flow rate of 550 L/h. The lift-out media basket system makes maintenance effortless, and the AquaStop valve means zero mess during cleaning.',
+        url:  'https://amzn.to/4w1QorR',
+        placeholder: false,
+      },
+      {
+        icon: '🌀', category: 'Filter — Hang-on-Back',
+        name: 'Fluval AC30 Power Filter',
+        desc: '5-stage hang-on-back filter with re-filtration system, rated for tanks up to 150 L. Easy to set up, quiet in operation and designed for fast, clean media changes.',
+        url:  'https://amzn.to/4mZiOhQ',
+        placeholder: false,
+      },
+      {
+        icon: '🌡️', category: 'Heater — Submersible',
+        name: 'Fluval E100 Electronic Heater (100 W)',
+        desc: 'Dual temperature sensors monitor both water and ambient air. The colour-coded LCD changes from green to blue or red if the water drifts out of range — great peace of mind for 30–60 L tanks.',
+        url:  'https://amzn.to/3QYg08R',
+        placeholder: false,
+      },
+      {
+        icon: '🌡️', category: 'Heater — Submersible',
+        name: 'Eheim Jager Aquarium Thermostat Heater 50W',
+        desc: 'Trusted German heater with stepless temperature control and a durable Schott glass tube. Auto-shutoff when out of water and a recalibration dial ensure accurate, safe heating.',
+        url:  'https://amzn.to/4eRwGJ1',
+        placeholder: false,
+      },
+      {
+        icon: '💡', category: 'Lighting',
+        name: 'Fluval Aquasky LED 61–85 cm',
+        desc: 'Expandable full-spectrum LED bar with Bluetooth app control. Covers the typical 60 cm tank footprint and supports both planted and community setups with customisable lighting schedules. (Check width fo aquarium so it fits.)',
+        url:  'https://amzn.to/4tJjF90',
+        placeholder: false,
+      },
+      {
+        icon: '🧪', category: 'Extra — Test Kit',
+        name: 'API Freshwater Master Test Kit',
+        desc: 'Tests pH, ammonia, nitrite and nitrate — the four essential parameters for a healthy tank. Over 800 tests per kit; far more accurate than strips and great value for money.',
+        url:  'https://amzn.to/4cW0n99',
+        placeholder: false,
+      },
+      {
+        icon: '🦠', category: 'Extra — Beneficial Bacteria',
+        name: 'Seachem Stability Biological Stabiliser',
+        desc: 'Rapidly establishes the nitrogen cycle using a blend of aerobic, anaerobic and facultative bacteria. Dose daily for the first week to cycle a new tank safely and quickly.',
+        url:  'https://amzn.to/49jbEiQ',
+        placeholder: false,
+      },
+    ],
+  },
+
+  // ── 60–120 LITRES ─────────────────────────────────────────────────────────
+  {
+    label: '60 – 120 Litres',
+    min: 60, max: 120,
+    slots: [
+      {
+        icon: '🌀', category: 'Filter — Canister',
+        name: 'Fluval 207 External Canister Filter',
+        desc: 'Rated up to 200 L with a 780 L/h flow rate. Features instant priming, an AquaStop shutoff valve and a stackable media basket system — a reliable workhorse for the 60–120 L range.',
+        url:  'https://amzn.to/48BV3Xj',
+        placeholder: false,
+      },
+      {
+        icon: '🌀', category: 'Filter — Hang-on-Back',
+        name: 'Oase BioMaster² 350',
+        desc: 'ENHANCED FLOW RATE: Updated connectors and optimised water routing give the BioMaster² 350 significantly higher flow rates for more uniform and healthier water conditions.',
+        url:  'https://amzn.to/4tM7c4B',
+        placeholder: false,
+      },
+      {
+        icon: '🌡️', category: 'Heater — Submersible',
+        name: 'Fluval E100 Electronic Heater (100 W)',
+        desc: 'Dual-sensor LCD heater with fish-fever alert and ambient temperature monitoring. The slim profile fits neatly behind equipment and the colour-coded display is easy to read at a glance.',
+        url:  'https://amzn.to/4eUhevM',
+        placeholder: false,
+      },
+      {
+        icon: '🌡️', category: 'Heater — Submersible',
+        name: 'Eheim Jager Aquarium Thermostat Heater 100W',
+        desc: 'Precision German glass heater suitable for tanks up to 125 L. Resealable design, thermo-safety cutout and a reliable bimetal thermostat keep temperatures rock-steady.',
+        url:  'https://amzn.to/4cK5Cu2',
+        placeholder: false,
+      },
+      {
+        icon: '💡', category: 'Lighting',
+        name: 'Fluval LED Plant 4.0 Aquarium Lighting with Bluetooth Mesh, 46W / 90cm',
+        desc: 'Fully customisable colour spectrum with programmable 24h light cycle. Mobile app control through enhanced Bluetooth Mesh with FluvalConnect app. (Check width fo aquarium so it fits.)',
+        url:  'https://amzn.to/4eqHHkB',
+        placeholder: false,
+      },
+      {
+        icon: '🧪', category: 'Extra — Test Kit',
+        name: 'API Freshwater Master Test Kit',
+        desc: 'Essential 4-in-1 liquid test kit for pH, ammonia, nitrite and nitrate. Accurate and economical — one kit provides over 800 tests, covering months of routine water quality checks.',
+        url:  'https://amzn.to/4cW0n99',
+        placeholder: false,
+      },
+      {
+        icon: '🌿', category: 'Extra — Plant Nutrition',
+        name: 'Seachem Flourish Comprehensive Plant Supplement',
+        desc: 'All-in-one liquid plant supplement providing micro and macro nutrients, trace elements and amino acids. Dose weekly to keep live plants lush and algae suppressed naturally.',
+        url:  'https://amzn.to/3OC65VX',
+        placeholder: false,
+      },
+    ],
+  },
+
+  // ── 120–200 LITRES ────────────────────────────────────────────────────────
+  {
+    label: '120 – 200 Litres',
+    min: 120, max: 200,
+    slots: [
+      {
+        icon: '🌀', category: 'Filter — Canister',
+        name: 'Oase BioMaster² 250 Aquarium Filter',
+        desc: 'The OASE BioMaster 250 is a premium German-engineered external canister filter designed for tanks up to 250 litres. It features a unique 5-stage filtration system with a built-in pre-filter basket that you can clean independently.',
+        url:  'https://amzn.to/423h79I',
+        placeholder: false,
+      },
+      {
+        icon: '🌀', category: 'Filter — Hang-on-Back',
+        name: 'Fluval AquaClear AC70',
+        desc: '4-stage filtration (2x mechanical, chemical, biological) for superior water clarity and quality. Patented refiltration system prolongs contact time with the medium for a cleaner, healthier, and biologically stable aquarium.',
+        url:  'https://amzn.to/4n5mjDE',
+        placeholder: false,
+      },
+      {
+        icon: '🌡️', category: 'Heater — Submersible',
+        name: 'FLUVAL E Advanced Electronic Heater, 200W',
+        desc: 'Accurate and Real-Time Monitoring: Fluval E series are among the most sophisticated aquarium heaters available today. Water temperature is continuously monitored and communicated using a simple-yet-effective color-coding system.',
+        url:  'https://amzn.to/4cWt45T',
+        placeholder: false,
+      },
+      {
+        icon: '🌡️', category: 'Heater — Submersible',
+        name: 'EHEIM Thermocontrol 150',
+        desc: 'Reliable precision glass heater for tanks up to 300 L. The recalibration dial and auto-safety shutoff have made the Jäger range a professional favourite for decades.',
+        url:  'https://amzn.to/4288ISk',
+        placeholder: false,
+      },
+      {
+        icon: '💡', category: 'Lighting',
+        name: 'Fluval Plant 3.0 LED 99–120 cm',
+        desc: 'Fully customisable colour spectrum with programmable 24h light cycle. Mobile app control through enhanced Bluetooth Mesh with FluvalConnect app. (Check width fo aquarium so it fits.)',
+        url:  'https://amzn.to/42FzDVP',
+        placeholder: false,
+      },
+      {
+        icon: '🌿', category: 'Extra — CO₂ System',
+        name: 'Fluval Bio-CO2 Pro Low-Pressure System',
+        desc: 'Easy-to-use CO2 delivery system allows both new and experienced hobbyists to effortlessly grow and maintain vibrant live aquatic plants in your tank.',
+        url:  'https://amzn.to/4t46fmP',
+        placeholder: false,
+      },
+      {
+        icon: '🧪', category: 'Extra — Water Treatment',
+        name: 'Seachem Prime 500 ml',
+        desc: 'The most concentrated dechlorinator available — one cap treats 200 L. Also detoxifies ammonia and nitrite during water changes and cycling, making it essential for larger tanks.',
+        url:  'https://amzn.to/4tVinru',
+        placeholder: false,
+      },
+    ],
+  },
+
+  // ── 200–300 LITRES ────────────────────────────────────────────────────────
+  {
+    label: '200 – 300 Litres',
+    min: 200, max: 300,
+    slots: [
+      {
+        icon: '🌀', category: 'Filter — Canister',
+        name: 'Fluval 407 External Canister Filter',
+        desc: 'Fluval\'s most popular large canister, rated up to 500 L at 1450 L/h. Instant push-button priming, a sealed rimless design and a multi-stage media basket system — built for long-term reliability.',
+        url:  'https://amzn.to/3QTbRD5',
+        placeholder: false,
+      },
+      {
+        icon: '🌀', category: 'Filter — Hang-on-Back',
+        name: 'OASE BioMaster 350 External Canister + HOB',
+        desc: 'EasyClean pre-filter chamber for easy cleaning of the filter and maximum comfort. Suitable for aquariums up to 250 liters',
+        url:  'https://amzn.to/48vhmOy',
+        placeholder: false,
+      },
+      {
+        icon: '🌡️', category: 'Heater — Submersible',
+        name: 'Fluval E300 Electronic Heater (300 W)',
+        desc: 'Top-of-the-range Fluval heater with dual sensors and LCD display, rated for tanks up to 300 L. Fast heat recovery, ±0.5 °C accuracy and a real-time ambient air temperature reading.',
+        url:  'https://amzn.to/3QynJdP',
+        placeholder: false,
+      },
+      {
+        icon: '🌡️', category: 'Heater — Submersible',
+        name: 'Eheim Thermocontrol e200 Heater',
+        desc: 'EHEIM thermocontrol+ e is our first adjustable heater with digital control via WLAN. You can set the precise temperature from 18 to 32 °C via smartphone, tablet or PC/MAC. The selected temperature is accurately measured electronically and kept constant.',
+        url:  'https://amzn.to/4w7F1ic',
+        placeholder: false,
+      },
+      {
+        icon: '💡', category: 'Lighting',
+        name: 'Fluval Plant 3.0 LED 120 cm',
+        desc: 'High-output planted LED with full RGB colour spectrum and Bluetooth app control. Sunrise, sunset, cloud and storm modes, plus a dedicated plant growth spectrum for lush planted setups. (Check width fo aquarium so it fits.)',
+        url:  'https://amzn.to/42FzDVP',
+        placeholder: false,
+      },
+      {
+        icon: '🔵', category: 'Extra — UV Steriliser',
+        name: 'Fluval UVC In-Line Clarifier',
+        desc: 'In-line UV steriliser that connects directly to canister filter hosing. Eliminates free-floating algae, bacteria and parasites — keeps display tanks crystal clear with no additional plumbing required.',
+        url:  'https://amzn.to/4upntfK',
+        placeholder: false,
+      },
+      {
+        icon: '🧪', category: 'Extra — Test Kit',
+        name: 'Seachem MultiTest Ammonia Test Kit',
+        desc: 'Distinguishes between toxic free ammonia and safer ionised ammonium — critical in larger, heavily stocked tanks. Far more informative than standard ammonia tests for managing mature tanks.',
+        url:  'https://amzn.to/4udPl6q',
+        placeholder: false,
+      },
+    ],
+  },
+
+  // ── 300+ LITRES ───────────────────────────────────────────────────────────
+  {
+    label: '300+ Litres',
+    min: 300, max: Infinity,
+    slots: [
+      {
+        icon: '🌀', category: 'Filter — Canister',
+        name: 'Fluval FX4 High Performance Canister Filter',
+        desc: 'Purpose-built for large tanks, the FX4 delivers 2650 L/h through a 6-stage media capacity of 6.8 L. Self-priming, auto water-change ready and designed to run for years without issue.',
+        url:  'https://amzn.to/48CMJqq',
+        placeholder: false,
+      },
+      {
+        icon: '🌀', category: 'Filter — Canister',
+        name: 'OASE BioMaster 600 External Canister Filter',
+        desc: 'OASE\'s flagship 600 L/h canister with 5-stage filtration and a large pre-filter basket. Effortless maintenance thanks to the removable pre-filter module — clean without disconnecting any hoses.',
+        url:  'https://amzn.to/4egN8Cs',
+        placeholder: false,
+      },
+      {
+        icon: '🌡️', category: 'Heater — Submersible',
+        name: 'Fluval E300 Electronic Heater (300 W)',
+        desc: 'For very large tanks use two units positioned at opposite ends of the aquarium for even heat distribution. Each provides LCD monitoring, dual sensors and ±0.5 °C accuracy.',
+        url:  'https://amzn.to/4tNkL3I',
+        placeholder: false,
+      },
+      {
+        icon: '🌡️', category: 'Heater — Inline / Submersible',
+        name: 'Eheim Aquarium Thermostat Heater, 300 W',
+        desc: 'Obvious ideas often are the best ones. For example, the aquarium heat-er as a rod. The heating rod is simply hung in the water and heats it. It is true that the principle is still the same as decades ago.',
+        url:  'https://amzn.to/3RdTd92',
+        placeholder: false,
+      },
+      {
+        icon: '💡', category: 'Lighting',
+        name: 'Fluval Plant 3.0 LED (two-unit spread)',
+        desc: 'For tanks over 120 cm, run two Fluval Plant 3.0 units synced via the Bluetooth app. Full spectrum, programmable day/night cycles and storm effects — the planted tank gold standard. (Check width fo aquarium so it fits.)',
+        url:  'https://amzn.to/42FzDVP',
+        placeholder: false,
+      },
+      {
+        icon: '🔵', category: 'Extra — UV Steriliser',
+        name: 'Fluval UVC In-Line Clarifier',
+        desc: 'Inline UV steriliser for canister filter hoses — eliminates algae blooms, waterborne pathogens and parasites. Essential maintenance equipment for large display and predator tanks.',
+        url:  'https://amzn.to/4upntfK',
+        placeholder: false,
+      },
+      {
+        icon: '🧪', category: 'Extra — Water Treatment',
+        name: 'Seachem Prime 2 L (Large Format)',
+        desc: 'The large-format bottle of the hobby\'s most trusted dechlorinator. Treats up to 8000 L — essential for frequent large water changes on big display tanks, and far more economical than smaller bottles.',
+        url:  'https://amzn.to/3PfBsFQ',
+        placeholder: false,
+      },
+    ],
+  },
+
+]; // END OF TIERS — do not edit below this line unless you know JS
+
+// =============================================================================
+//  ENGINE — no need to edit below here
+// =============================================================================
+
 const FISH = [
-  // Nano / desktop
-  { name:'Betta',          emoji:'🐠', minL:15,  minW:20, minD:15, minH:15, care:'Easy',    temp:'24–28°C', tags:['Nano','Solitary','Tropical'] },
-  { name:'Endler\'s Livebearer', emoji:'🐟', minL:20, minW:25, minD:20, minH:20, care:'Easy', temp:'22–28°C', tags:['Nano','Tropical','Schooling'] },
-  { name:'Pygmy Corydoras',emoji:'🐟', minL:20,  minW:30, minD:20, minH:20, care:'Easy',    temp:'22–26°C', tags:['Nano','Tropical','Bottom'] },
-  { name:'Chili Rasbora', emoji:'🐠', minL:20,  minW:30, minD:20, minH:20, care:'Moderate',temp:'22–28°C', tags:['Nano','Tropical','Schooling'] },
-  { name:'Celestial Pearl Danio', emoji:'🐟', minL:25, minW:35, minD:22, minH:22, care:'Easy', temp:'20–26°C', tags:['Nano','Tropical','Schooling'] },
-  { name:'Scarlet Badis',  emoji:'🐟', minL:25,  minW:30, minD:20, minH:20, care:'Moderate',temp:'22–27°C', tags:['Nano','Tropical','Predatory'] },
-
-  // Small community
-  { name:'Neon Tetra',     emoji:'🐠', minL:35,  minW:40, minD:25, minH:25, care:'Easy',    temp:'20–26°C', tags:['Community','Tropical','Schooling'] },
-  { name:'Guppy',          emoji:'🐟', minL:35,  minW:40, minD:25, minH:25, care:'Easy',    temp:'22–28°C', tags:['Community','Tropical','Livebearer'] },
-  { name:'Platy',          emoji:'🐟', minL:40,  minW:45, minD:25, minH:25, care:'Easy',    temp:'18–28°C', tags:['Community','Tropical','Livebearer'] },
-  { name:'Zebra Danio',    emoji:'🐟', minL:40,  minW:45, minD:25, minH:25, care:'Easy',    temp:'18–24°C', tags:['Community','Coldwater','Schooling'] },
-  { name:'Harlequin Rasbora', emoji:'🐠', minL:40, minW:45, minD:25, minH:25, care:'Easy', temp:'22–27°C', tags:['Community','Tropical','Schooling'] },
-  { name:'Otocinclus',     emoji:'🐡', minL:40,  minW:45, minD:25, minH:25, care:'Moderate',temp:'21–26°C', tags:['Community','Tropical','Algae Eater'] },
-  { name:'Corydoras',      emoji:'🐟', minL:45,  minW:50, minD:28, minH:28, care:'Easy',    temp:'22–26°C', tags:['Community','Tropical','Bottom'] },
-  { name:'White Cloud Minnow', emoji:'🐟', minL:40, minW:45, minD:25, minH:25, care:'Easy', temp:'14–22°C', tags:['Community','Coldwater','Schooling'] },
-  { name:'Cherry Barb',    emoji:'🐠', minL:40,  minW:45, minD:25, minH:25, care:'Easy',    temp:'23–27°C', tags:['Community','Tropical','Schooling'] },
-  { name:'Ember Tetra',    emoji:'🐠', minL:35,  minW:40, minD:25, minH:25, care:'Easy',    temp:'25–30°C', tags:['Community','Tropical','Schooling'] },
-
-  // Medium
-  { name:'Mollies',        emoji:'🐟', minL:55,  minW:55, minD:30, minH:30, care:'Easy',    temp:'24–28°C', tags:['Community','Tropical','Livebearer'] },
-  { name:'Swordtail',      emoji:'🐟', minL:55,  minW:55, minD:30, minH:30, care:'Easy',    temp:'22–28°C', tags:['Community','Tropical','Livebearer'] },
-  { name:'Dwarf Gourami',  emoji:'🐠', minL:60,  minW:60, minD:30, minH:30, care:'Easy',    temp:'25–28°C', tags:['Community','Tropical','Labyrinth'] },
-  { name:'Bolivian Ram',   emoji:'🐡', minL:75,  minW:60, minD:30, minH:30, care:'Moderate',temp:'24–28°C', tags:['Cichlid','Tropical','Pair'] },
-  { name:'German Blue Ram',emoji:'🐡', minL:80,  minW:60, minD:30, minH:30, care:'Advanced',temp:'27–30°C', tags:['Cichlid','Tropical','Pair'] },
-  { name:'Bristlenose Pleco', emoji:'🐡', minL:80, minW:60, minD:30, minH:25, care:'Easy', temp:'21–27°C', tags:['Community','Tropical','Algae Eater'] },
-  { name:'Cardinal Tetra', emoji:'🐠', minL:60,  minW:60, minD:30, minH:30, care:'Moderate',temp:'23–27°C', tags:['Community','Tropical','Schooling'] },
-  { name:'Kuhli Loach',    emoji:'🐟', minL:60,  minW:60, minD:30, minH:25, care:'Easy',    temp:'24–30°C', tags:['Community','Tropical','Bottom'] },
-  { name:'Rainbow Fish',   emoji:'🐠', minL:100, minW:80, minD:35, minH:35, care:'Easy',    temp:'24–28°C', tags:['Community','Tropical','Schooling'] },
-  { name:'Angelfish',      emoji:'🐡', minL:150, minW:60, minD:40, minH:50, care:'Moderate',temp:'25–30°C', tags:['Community','Tropical','Tall Tank'] },
-  { name:'Discus',         emoji:'🐡', minL:200, minW:60, minD:40, minH:55, care:'Advanced',temp:'28–31°C', tags:['Specialist','Tropical','Tall Tank'] },
-
-  // Larger / species tanks
-  { name:'Goldfish (Fancy)', emoji:'🐟', minL:100, minW:60, minD:35, minH:35, care:'Easy',  temp:'10–22°C', tags:['Coldwater','Messy','Schooling'] },
-  { name:'Goldfish (Common)', emoji:'🐟', minL:200, minW:80, minD:40, minH:40, care:'Easy', temp:'10–20°C', tags:['Coldwater','Messy','Active'] },
-  { name:'Convict Cichlid', emoji:'🐡', minL:120, minW:70, minD:35, minH:35, care:'Easy',   temp:'24–28°C', tags:['Cichlid','Tropical','Aggressive'] },
-  { name:'Firemouth Cichlid', emoji:'🐡', minL:120, minW:70, minD:35, minH:35, care:'Moderate', temp:'24–28°C', tags:['Cichlid','Tropical','Pair'] },
-  { name:'Keyhole Cichlid', emoji:'🐡', minL:120, minW:70, minD:35, minH:35, care:'Easy',   temp:'24–28°C', tags:['Cichlid','Tropical','Peaceful'] },
-  { name:'Geophagus',      emoji:'🐡', minL:200, minW:80, minD:40, minH:40, care:'Moderate',temp:'25–30°C', tags:['Cichlid','Tropical','Earth Eater'] },
-  { name:'Oscars',         emoji:'🐡', minL:300, minW:90, minD:45, minH:45, care:'Easy',    temp:'23–28°C', tags:['Large','Tropical','Predatory'] },
-  { name:'Jewel Cichlid',  emoji:'🐡', minL:100, minW:60, minD:35, minH:35, care:'Moderate',temp:'24–28°C', tags:['Cichlid','Tropical','Aggressive'] },
-  { name:'Pearl Gourami',  emoji:'🐠', minL:80,  minW:60, minD:30, minH:30, care:'Easy',    temp:'24–28°C', tags:['Community','Tropical','Labyrinth'] },
-  { name:'Honey Gourami',  emoji:'🐠', minL:60,  minW:55, minD:28, minH:28, care:'Easy',    temp:'24–28°C', tags:['Community','Tropical','Labyrinth'] },
-  { name:'Denison Barb',   emoji:'🐟', minL:150, minW:80, minD:35, minH:35, care:'Moderate',temp:'15–25°C', tags:['Community','Tropical','Schooling'] },
-  { name:'Tiger Barb',     emoji:'🐟', minL:60,  minW:55, minD:28, minH:28, care:'Easy',    temp:'20–26°C', tags:['Community','Tropical','Semi-aggressive'] },
-  { name:'Boesemani Rainbowfish', emoji:'🐠', minL:130, minW:80, minD:35, minH:35, care:'Easy', temp:'24–28°C', tags:['Community','Tropical','Schooling'] },
+  { name:'Betta',                emoji:'🐠', minL:15,  minW:20, minD:15, minH:15, care:'Easy',    temp:'24–28°C', tags:['Nano','Solitary','Tropical'] },
+  { name:"Endler's Livebearer",  emoji:'🐟', minL:20,  minW:25, minD:20, minH:20, care:'Easy',    temp:'22–28°C', tags:['Nano','Tropical','Schooling'] },
+  { name:'Pygmy Corydoras',      emoji:'🐟', minL:20,  minW:30, minD:20, minH:20, care:'Easy',    temp:'22–26°C', tags:['Nano','Tropical','Bottom'] },
+  { name:'Chili Rasbora',        emoji:'🐠', minL:20,  minW:30, minD:20, minH:20, care:'Moderate',temp:'22–28°C', tags:['Nano','Tropical','Schooling'] },
+  { name:'Celestial Pearl Danio',emoji:'🐟', minL:25,  minW:35, minD:22, minH:22, care:'Easy',    temp:'20–26°C', tags:['Nano','Tropical','Schooling'] },
+  { name:'Neon Tetra',           emoji:'🐠', minL:35,  minW:40, minD:25, minH:25, care:'Easy',    temp:'20–26°C', tags:['Community','Tropical','Schooling'] },
+  { name:'Guppy',                emoji:'🐟', minL:35,  minW:40, minD:25, minH:25, care:'Easy',    temp:'22–28°C', tags:['Community','Tropical','Livebearer'] },
+  { name:'Platy',                emoji:'🐟', minL:40,  minW:45, minD:25, minH:25, care:'Easy',    temp:'18–28°C', tags:['Community','Tropical','Livebearer'] },
+  { name:'Zebra Danio',          emoji:'🐟', minL:40,  minW:45, minD:25, minH:25, care:'Easy',    temp:'18–24°C', tags:['Community','Coldwater','Schooling'] },
+  { name:'Harlequin Rasbora',    emoji:'🐠', minL:40,  minW:45, minD:25, minH:25, care:'Easy',    temp:'22–27°C', tags:['Community','Tropical','Schooling'] },
+  { name:'Corydoras',            emoji:'🐟', minL:45,  minW:50, minD:28, minH:28, care:'Easy',    temp:'22–26°C', tags:['Community','Tropical','Bottom'] },
+  { name:'White Cloud Minnow',   emoji:'🐟', minL:40,  minW:45, minD:25, minH:25, care:'Easy',    temp:'14–22°C', tags:['Community','Coldwater','Schooling'] },
+  { name:'Cherry Barb',          emoji:'🐠', minL:40,  minW:45, minD:25, minH:25, care:'Easy',    temp:'23–27°C', tags:['Community','Tropical','Schooling'] },
+  { name:'Ember Tetra',          emoji:'🐠', minL:35,  minW:40, minD:25, minH:25, care:'Easy',    temp:'25–30°C', tags:['Community','Tropical','Schooling'] },
+  { name:'Mollies',              emoji:'🐟', minL:55,  minW:55, minD:30, minH:30, care:'Easy',    temp:'24–28°C', tags:['Community','Tropical','Livebearer'] },
+  { name:'Swordtail',            emoji:'🐟', minL:55,  minW:55, minD:30, minH:30, care:'Easy',    temp:'22–28°C', tags:['Community','Tropical','Livebearer'] },
+  { name:'Dwarf Gourami',        emoji:'🐠', minL:60,  minW:60, minD:30, minH:30, care:'Easy',    temp:'25–28°C', tags:['Community','Tropical','Labyrinth'] },
+  { name:'Bolivian Ram',         emoji:'🐡', minL:75,  minW:60, minD:30, minH:30, care:'Moderate',temp:'24–28°C', tags:['Cichlid','Tropical','Pair'] },
+  { name:'German Blue Ram',      emoji:'🐡', minL:80,  minW:60, minD:30, minH:30, care:'Advanced',temp:'27–30°C', tags:['Cichlid','Tropical','Pair'] },
+  { name:'Bristlenose Pleco',    emoji:'🐡', minL:80,  minW:60, minD:30, minH:25, care:'Easy',    temp:'21–27°C', tags:['Community','Tropical','Algae Eater'] },
+  { name:'Cardinal Tetra',       emoji:'🐠', minL:60,  minW:60, minD:30, minH:30, care:'Moderate',temp:'23–27°C', tags:['Community','Tropical','Schooling'] },
+  { name:'Kuhli Loach',          emoji:'🐟', minL:60,  minW:60, minD:30, minH:25, care:'Easy',    temp:'24–30°C', tags:['Community','Tropical','Bottom'] },
+  { name:'Rainbow Fish',         emoji:'🐠', minL:100, minW:80, minD:35, minH:35, care:'Easy',    temp:'24–28°C', tags:['Community','Tropical','Schooling'] },
+  { name:'Angelfish',            emoji:'🐡', minL:150, minW:60, minD:40, minH:50, care:'Moderate',temp:'25–30°C', tags:['Community','Tropical','Tall Tank'] },
+  { name:'Discus',               emoji:'🐡', minL:200, minW:60, minD:40, minH:55, care:'Advanced',temp:'28–31°C', tags:['Specialist','Tropical','Tall Tank'] },
+  { name:'Goldfish (Fancy)',     emoji:'🐟', minL:100, minW:60, minD:35, minH:35, care:'Easy',    temp:'10–22°C', tags:['Coldwater','Messy','Schooling'] },
+  { name:'Goldfish (Common)',    emoji:'🐟', minL:200, minW:80, minD:40, minH:40, care:'Easy',    temp:'10–20°C', tags:['Coldwater','Messy','Active'] },
+  { name:'Convict Cichlid',      emoji:'🐡', minL:120, minW:70, minD:35, minH:35, care:'Easy',    temp:'24–28°C', tags:['Cichlid','Tropical','Aggressive'] },
+  { name:'Firemouth Cichlid',    emoji:'🐡', minL:120, minW:70, minD:35, minH:35, care:'Moderate',temp:'24–28°C', tags:['Cichlid','Tropical','Pair'] },
+  { name:'Keyhole Cichlid',      emoji:'🐡', minL:120, minW:70, minD:35, minH:35, care:'Easy',    temp:'24–28°C', tags:['Cichlid','Tropical','Peaceful'] },
+  { name:'Geophagus',            emoji:'🐡', minL:200, minW:80, minD:40, minH:40, care:'Moderate',temp:'25–30°C', tags:['Cichlid','Tropical','Earth Eater'] },
+  { name:'Oscars',               emoji:'🐡', minL:300, minW:90, minD:45, minH:45, care:'Easy',    temp:'23–28°C', tags:['Large','Tropical','Predatory'] },
+  { name:'Jewel Cichlid',        emoji:'🐡', minL:100, minW:60, minD:35, minH:35, care:'Moderate',temp:'24–28°C', tags:['Cichlid','Tropical','Aggressive'] },
+  { name:'Pearl Gourami',        emoji:'🐠', minL:80,  minW:60, minD:30, minH:30, care:'Easy',    temp:'24–28°C', tags:['Community','Tropical','Labyrinth'] },
+  { name:'Honey Gourami',        emoji:'🐠', minL:60,  minW:55, minD:28, minH:28, care:'Easy',    temp:'24–28°C', tags:['Community','Tropical','Labyrinth'] },
+  { name:'Tiger Barb',           emoji:'🐟', minL:60,  minW:55, minD:28, minH:28, care:'Easy',    temp:'20–26°C', tags:['Community','Tropical','Semi-aggressive'] },
+  { name:'Boesemani Rainbowfish',emoji:'🐠', minL:130, minW:80, minD:35, minH:35, care:'Easy',    temp:'24–28°C', tags:['Community','Tropical','Schooling'] },
 ];
 
-// ─── DOM REFS ────────────────────────────────────────────────────────────────
+const ARROW = `<svg viewBox="0 0 20 20"><path d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"/></svg>`;
+
 const wSlider = document.getElementById('widthSlider');
 const dSlider = document.getElementById('depthSlider');
 const hSlider = document.getElementById('heightSlider');
-const wVal    = document.getElementById('wVal');
-const dVal    = document.getElementById('dVal');
-const hVal    = document.getElementById('hVal');
-const volNum  = document.getElementById('volNum');
-const volGal  = document.getElementById('volGal');
-const fishGrid = document.getElementById('fishGrid');
-const fishSubtitle = document.getElementById('fishSubtitle');
-
-// Tank faces
-const scene      = document.getElementById('tankScene');
+const scene   = document.getElementById('tankScene');
 const faceFront  = document.getElementById('faceFront');
 const faceTop    = document.getElementById('faceTop');
 const faceRight  = document.getElementById('faceRight');
 const faceBottom = document.getElementById('faceBottom');
 
-// ─── TANK RENDER ─────────────────────────────────────────────────────────────
-const TANK_MAX_PX = 160; // max display dimension
+const TANK_MAX_PX = 260;
 
 function updateTank() {
-  const wCm = +wSlider.value;
-  const dCm = +dSlider.value;
-  const hCm = +hSlider.value;
-
+  const wCm = +wSlider.value, dCm = +dSlider.value, hCm = +hSlider.value;
   const scale = TANK_MAX_PX / Math.max(wCm, dCm, hCm);
-  const W = Math.round(wCm * scale);
-  const D = Math.round(dCm * scale);
-  const H = Math.round(hCm * scale);
-  const inset = Math.round(D * 0.5); // top/right inset for 3-D effect
+  const W = Math.round(wCm * scale), D = Math.round(dCm * scale), H = Math.round(hCm * scale);
+  const inset = Math.round(D * 0.5);
 
   scene.style.width  = (W + inset) + 'px';
   scene.style.height = (H + inset) + 'px';
+  faceFront.style.cssText += `width:${W}px;height:${H}px;bottom:0;left:0;`;
+  faceTop.style.cssText    = `width:${W}px;height:${inset}px;bottom:${H}px;left:0;transform:skewX(${-45*(inset/D)}deg);transform-origin:bottom left;`;
+  faceRight.style.cssText  = `width:${inset}px;height:${H}px;bottom:0;left:${W}px;transform:skewY(${-45*(inset/D)}deg);transform-origin:top left;`;
+  faceBottom.style.cssText = `width:${W}px;height:${inset}px;bottom:0;left:0;transform:skewX(${-45*(inset/D)}deg);transform-origin:bottom left;opacity:0.5;`;
 
-  // Front face
-  faceFront.style.cssText += `
-    width:${W}px; height:${H}px;
-    bottom:0; left:0;
-  `;
-
-  // Top face (parallelogram via clip-path)
-  faceTop.style.cssText = `
-    width:${W}px; height:${inset}px;
-    bottom:${H}px; left:0;
-    transform: skewX(${-45 * (inset/D)}deg) scaleX(1);
-    transform-origin: bottom left;
-  `;
-
-  // Right face
-  faceRight.style.cssText = `
-    width:${inset}px; height:${H}px;
-    bottom:0; left:${W}px;
-    transform: skewY(${-45 * (inset/D)}deg);
-    transform-origin: top left;
-  `;
-
-  // Bottom face
-  faceBottom.style.cssText = `
-    width:${W}px; height:${inset}px;
-    bottom:0; left:0;
-    transform: skewX(${-45 * (inset/D)}deg);
-    transform-origin: bottom left;
-    opacity:0.5;
-  `;
-
-  // Volume
-  const litres = Math.round((wCm * dCm * hCm) / 1000);
+  const litres  = Math.round((wCm * dCm * hCm) / 1000);
   const gallons = (litres * 0.264172).toFixed(1);
-  volNum.textContent = litres.toLocaleString();
-  volGal.textContent = gallons;
-
-  // Labels
-  wVal.textContent = wCm;
-  dVal.textContent = dCm;
-  hVal.textContent = hCm;
+  document.getElementById('volNum').textContent = litres.toLocaleString();
+  document.getElementById('volGal').textContent = gallons;
+  document.getElementById('wVal').textContent   = wCm;
+  document.getElementById('dVal').textContent   = dCm;
+  document.getElementById('hVal').textContent   = hCm;
 
   updateFish(litres, wCm, dCm, hCm);
+  updateEquipment(litres);
 }
 
-// ─── FISH FILTER ─────────────────────────────────────────────────────────────
 function updateFish(litres, wCm, dCm, hCm) {
-  const compatible = FISH.filter(f =>
-    litres >= f.minL &&
-    wCm    >= f.minW &&
-    dCm    >= f.minD &&
-    hCm    >= f.minH
-  );
-
-  fishGrid.innerHTML = '';
-
-  if (compatible.length === 0) {
-    fishSubtitle.textContent = 'Increase tank size to see compatible fish';
-    fishGrid.innerHTML = `
-      <div class="empty-state" style="grid-column:1/-1">
-        <div class="big">🪣</div>
-        <p>Tank too small for most fish.<br>Try increasing the dimensions!</p>
-      </div>`;
+  const grid     = document.getElementById('fishGrid');
+  const subtitle = document.getElementById('fishSubtitle');
+  const compat   = FISH.filter(f => litres >= f.minL && wCm >= f.minW && dCm >= f.minD && hCm >= f.minH);
+  grid.innerHTML = '';
+  if (!compat.length) {
+    subtitle.textContent = 'Increase tank size to see compatible fish';
+    grid.innerHTML = `<div class="empty-state"><div class="big">🪣</div><p>Tank too small for most fish.<br>Try increasing the dimensions!</p></div>`;
     return;
   }
-
-  fishSubtitle.textContent = `${compatible.length} species suitable for a ${litres}L tank`;
-
-  compatible.forEach((f, i) => {
-    const card = document.createElement('div');
-    card.className = 'fish-card';
-    card.style.animationDelay = (i * 0.04) + 's';
-    card.innerHTML = `
-      <div class="fish-emoji">${f.emoji}</div>
-      <div class="fish-name">${f.name}</div>
-      <div class="fish-meta">
-        <span>${f.care}</span>
-        <span>${f.temp}</span>
-        ${f.tags.map(t => `<span>${t}</span>`).join('')}
-      </div>
-    `;
-    fishGrid.appendChild(card);
+  subtitle.textContent = `${compat.length} species suitable for a ${litres}L tank`;
+  compat.forEach((f, i) => {
+    const c = document.createElement('div');
+    c.className = 'fish-card';
+    c.style.animationDelay = (i * 0.04) + 's';
+    c.innerHTML = `<div class="fish-emoji">${f.emoji}</div><div class="fish-name">${f.name}</div><div class="fish-meta"><span>${f.care}</span><span>${f.temp}</span>${f.tags.map(t=>`<span>${t}</span>`).join('')}</div>`;
+    grid.appendChild(c);
   });
 }
 
-// ─── INIT ─────────────────────────────────────────────────────────────────────
+function updateEquipment(litres) {
+  const badge   = document.getElementById('eqTierBadge');
+  const columns = document.getElementById('eqColumns');
+  columns.innerHTML = '';
+
+  const tier = TIERS.find(t => litres >= t.min && litres < t.max);
+  if (!tier) { badge.textContent = 'Select a tank size above'; return; }
+
+  badge.textContent = `Showing recommendations for: ${tier.label}`;
+
+  tier.slots.forEach((slot, i) => {
+    const card = document.createElement('div');
+    card.className = 'eq-slot' + (slot.placeholder ? ' placeholder' : '');
+    card.style.animationDelay = (i * 0.06) + 's';
+    card.innerHTML = `
+      <div class="eq-slot-header">
+        <span class="eq-slot-icon">${slot.icon}</span>
+        <span class="eq-slot-category">${slot.category}</span>
+      </div>
+      <div class="eq-slot-name">${slot.placeholder ? '— Coming soon —' : slot.name}</div>
+      <div class="eq-slot-desc">${slot.desc}</div>
+      <a class="eq-slot-btn" href="${slot.placeholder ? '#' : slot.url}" target="${slot.placeholder ? '_self' : '_blank'}" rel="noopener sponsored">
+        ${slot.placeholder ? 'Coming soon' : 'View on Amazon'} ${ARROW}
+      </a>`;
+    columns.appendChild(card);
+  });
+}
+
 [wSlider, dSlider, hSlider].forEach(s => s.addEventListener('input', updateTank));
 updateTank();
 </script>
