@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google-site-verification" content="sEnmyU8sNCcsuCCzJp8eIEnhG6_4mKqbvFrIE_o-WIc" />
+<title>AquaCalc — Fish Tank Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --deep: #03111f;
+    --mid: #062a45;
+    --surface: #0a3d5e;
+    --glow: #00c8ff;
+    --glow2: #00ffcc;
+    --accent: #ff6b35;
+    --text: #d0eeff;
+    --muted: #5c8aaa;
+    --glass: rgba(0,200,255,0.06);
+    --glass-border: rgba(0,200,255,0.18);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--deep);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 20px 60px;
+    overflow-x: hidden;
+  }
+
+  /* Animated bubbles background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 80%, rgba(0,80,160,0.3) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(0,160,120,0.15) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .bubble {
+    position: fixed;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(0,200,255,0.4), rgba(0,200,255,0.05));
+    border: 1px solid rgba(0,200,255,0.2);
+    animation: rise linear infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+  @keyframes rise {
+    0% { transform: translateY(110vh) scale(1); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 0.6; }
+    100% { transform: translateY(-10vh) scale(1.1); opacity: 0; }
+  }
+
+  header {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    margin-bottom: 36px;
+  }
+
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    color: #fff;
+    letter-spacing: 2px;
+    text-shadow: 0 0 30px rgba(0,200,255,0.5);
+  }
+
+  header h1 span { color: var(--glow); }
+
+  header p {
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 0.78rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .main-grid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    width: 100%;
+    max-width: 1100px;
+  }
+
+  /* ── TANK PANEL ── */
+  .tank-panel {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    backdrop-filter: blur(4px);
+  }
+
+  .tank-panel h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    margin-bottom: 22px;
+    color: var(--glow);
+    letter-spacing: 1px;
+    align-self: flex-start;
+  }
+
+  /* 3-D tank wrapper */
+  .tank-3d-wrapper {
+    perspective: 800px;
+    margin-bottom: 24px;
+  }
+
+  .tank-scene {
+    position: relative;
+    transform-style: preserve-3d;
+    transform: rotateX(8deg) rotateY(-8deg);
+    transition: width 0.4s, height 0.4s;
+  }
+
+  /* Tank faces */
+  .tank-face {
+    position: absolute;
+    border: 2px solid rgba(0,200,255,0.5);
+    background: rgba(0,80,160,0.25);
+    backdrop-filter: blur(2px);
+    transition: all 0.4s;
+  }
+
+  .tank-face.front {
+    background: linear-gradient(160deg, rgba(0,150,255,0.22) 0%, rgba(0,60,120,0.35) 100%);
+    border-color: rgba(0,200,255,0.7);
+    box-shadow: inset 0 0 40px rgba(0,200,255,0.08), 0 0 20px rgba(0,200,255,0.15);
+    border-radius: 4px 4px 2px 2px;
+    overflow: hidden;
+  }
+
+  /* Water shimmer */
+  .tank-face.front::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 18px,
+      rgba(0,200,255,0.04) 18px,
+      rgba(0,200,255,0.04) 19px
+    );
+    animation: shimmer 4s linear infinite;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 40px; }
+  }
+
+  /* Gravel */
+  .tank-face.front::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 14%;
+    background: linear-gradient(0deg, rgba(80,50,20,0.7), rgba(100,70,30,0.3));
+    border-top: 1px solid rgba(200,150,50,0.3);
+    z-index: 1;
+  }
+
+  .tank-face.top {
+    background: linear-gradient(180deg, rgba(0,200,255,0.25), rgba(0,100,200,0.15));
+    border-color: rgba(0,220,255,0.5);
+    border-radius: 2px;
+  }
+
+  .tank-face.right {
+    background: linear-gradient(90deg, rgba(0,60,120,0.4), rgba(0,80,160,0.2));
+    border-color: rgba(0,150,200,0.4);
+  }
+
+  .tank-face.bottom {
+    background: rgba(20,40,60,0.7);
+    border-color: rgba(0,100,150,0.4);
+  }
+
+  /* Mini fish inside tank */
+  .fish-icon {
+    position: absolute;
+    font-size: 16px;
+    animation: swim 6s ease-in-out infinite;
+    z-index: 2;
+    filter: drop-shadow(0 0 4px rgba(0,200,255,0.5));
+  }
+  .fish-icon:nth-child(2) { animation-delay: -2s; top: 30%; left: 20%; }
+  .fish-icon:nth-child(3) { animation-delay: -4s; top: 55%; left: 55%; font-size: 12px; }
+  .fish-icon:nth-child(4) { animation-delay: -1s; top: 20%; left: 60%; font-size: 20px; }
+
+  @keyframes swim {
+    0%   { transform: translateX(0px) scaleX(1); }
+    45%  { transform: translateX(40px) scaleX(1); }
+    50%  { transform: translateX(40px) scaleX(-1); }
+    95%  { transform: translateX(0px) scaleX(-1); }
+    100% { transform: translateX(0px) scaleX(1); }
+  }
+
+  /* Volume badge */
+  .volume-badge {
+    background: linear-gradient(135deg, var(--mid), var(--surface));
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    padding: 12px 24px;
+    text-align: center;
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  .volume-badge .vol-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    color: var(--glow);
+    text-shadow: 0 0 20px rgba(0,200,255,0.4);
+  }
+
+  .volume-badge .vol-label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* ── SLIDERS PANEL ── */
+  .sliders-panel {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 28px;
+    backdrop-filter: blur(4px);
+  }
+
+  .sliders-panel h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    margin-bottom: 24px;
+    color: var(--glow2);
+    letter-spacing: 1px;
+  }
+
+  .slider-group {
+    margin-bottom: 24px;
+  }
+
+  .slider-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+  }
+
+  .slider-label-row .dim-name {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+  }
+
+  .slider-label-row .dim-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    color: #fff;
+  }
+
+  .slider-label-row .dim-unit {
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-left: 3px;
+  }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+
+  input[type=range].width-slider  { background: linear-gradient(90deg, var(--glow), var(--mid)); }
+  input[type=range].depth-slider  { background: linear-gradient(90deg, var(--glow2), var(--mid)); }
+  input[type=range].height-slider { background: linear-gradient(90deg, #a78bfa, var(--mid)); }
+
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid var(--glow);
+    box-shadow: 0 0 10px rgba(0,200,255,0.5);
+    transition: box-shadow 0.2s;
+  }
+
+  input[type=range].depth-slider::-webkit-slider-thumb { border-color: var(--glow2); box-shadow: 0 0 10px rgba(0,255,200,0.5); }
+  input[type=range].height-slider::-webkit-slider-thumb { border-color: #a78bfa; box-shadow: 0 0 10px rgba(167,139,250,0.5); }
+
+  input[type=range]:hover::-webkit-slider-thumb { box-shadow: 0 0 18px rgba(0,200,255,0.8); }
+
+  .slider-ticks {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+    font-size: 0.6rem;
+    color: var(--muted);
+  }
+
+  /* ── FISH LIST PANEL (full width) ── */
+  .fish-panel {
+    grid-column: 1 / -1;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 28px;
+    backdrop-filter: blur(4px);
+  }
+
+  .fish-panel h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    margin-bottom: 6px;
+    color: var(--accent);
+    letter-spacing: 1px;
+  }
+
+  .fish-panel .subtitle {
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-bottom: 22px;
+    letter-spacing: 1px;
+  }
+
+  .fish-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
+  }
+
+  .fish-card {
+    background: linear-gradient(135deg, rgba(0,60,100,0.5), rgba(0,30,60,0.6));
+    border: 1px solid rgba(0,200,255,0.12);
+    border-radius: 12px;
+    padding: 14px 16px;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    animation: fadeIn 0.3s ease both;
+  }
+
+  .fish-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(0,200,255,0.4);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .fish-card .fish-emoji { font-size: 1.6rem; margin-bottom: 6px; }
+
+  .fish-card .fish-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+
+  .fish-card .fish-meta {
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    line-height: 1.7;
+  }
+
+  .fish-card .fish-meta span {
+    display: inline-block;
+    background: rgba(0,200,255,0.08);
+    border: 1px solid rgba(0,200,255,0.15);
+    border-radius: 4px;
+    padding: 1px 6px;
+    margin: 2px 2px 0 0;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--muted);
+  }
+
+  .empty-state .big { font-size: 3rem; margin-bottom: 12px; }
+  .empty-state p { font-size: 0.8rem; letter-spacing: 1px; }
+
+  @media (max-width: 700px) {
+    .main-grid { grid-template-columns: 1fr; }
+    .fish-panel { grid-column: 1; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Background bubbles -->
+<script>
+  for (let i = 0; i < 18; i++) {
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    const size = 4 + Math.random() * 14;
+    b.style.cssText = `
+      width:${size}px; height:${size}px;
+      left:${Math.random()*100}%;
+      animation-duration:${8+Math.random()*14}s;
+      animation-delay:-${Math.random()*20}s;
+    `;
+    document.body.appendChild(b);
+  }
+</script>
+
+<header>
+  <h1>Aqua<span>Calc</span></h1>
+  <p>Fish Tank Planner &amp; Stocking Guide</p>
+</header>
+
+<div class="main-grid">
+
+  <!-- TANK VISUALISATION -->
+  <div class="tank-panel">
+    <h2>Tank Preview</h2>
+    <div class="tank-3d-wrapper">
+      <div class="tank-scene" id="tankScene">
+        <!-- faces populated by JS -->
+        <div class="tank-face front" id="faceFront">
+          <div class="fish-icon">🐠</div>
+          <div class="fish-icon">🐟</div>
+          <div class="fish-icon">🐡</div>
+        </div>
+        <div class="tank-face top"    id="faceTop"></div>
+        <div class="tank-face right"  id="faceRight"></div>
+        <div class="tank-face bottom" id="faceBottom"></div>
+      </div>
+    </div>
+    <div class="volume-badge">
+      <div class="vol-num" id="volNum">0</div>
+      <div class="vol-label">litres &nbsp;·&nbsp; <span id="volGal">0</span> US gal</div>
+    </div>
+  </div>
+
+  <!-- SLIDERS -->
+  <div class="sliders-panel">
+    <h2>Tank Dimensions</h2>
+
+    <div class="slider-group">
+      <div class="slider-label-row">
+        <span class="dim-name">↔ Width</span>
+        <span><span class="dim-value" id="wVal">60</span><span class="dim-unit">cm</span></span>
+      </div>
+      <input type="range" class="width-slider" id="widthSlider" min="20" max="200" value="60">
+      <div class="slider-ticks"><span>20</span><span>60</span><span>100</span><span>150</span><span>200</span></div>
+    </div>
+
+    <div class="slider-group">
+      <div class="slider-label-row">
+        <span class="dim-name">⬤ Depth</span>
+        <span><span class="dim-value" id="dVal">30</span><span class="dim-unit">cm</span></span>
+      </div>
+      <input type="range" class="depth-slider" id="depthSlider" min="15" max="80" value="30">
+      <div class="slider-ticks"><span>15</span><span>30</span><span>50</span><span>65</span><span>80</span></div>
+    </div>
+
+    <div class="slider-group">
+      <div class="slider-label-row">
+        <span class="dim-name">↕ Height</span>
+        <span><span class="dim-value" id="hVal">35</span><span class="dim-unit">cm</span></span>
+      </div>
+      <input type="range" class="height-slider" id="heightSlider" min="15" max="80" value="35">
+      <div class="slider-ticks"><span>15</span><span>25</span><span>40</span><span>60</span><span>80</span></div>
+    </div>
+  </div>
+
+  <!-- FISH LIST -->
+  <div class="fish-panel">
+    <h2>Compatible Fish</h2>
+    <p class="subtitle" id="fishSubtitle">Adjust your tank dimensions to see stocking options</p>
+    <div class="fish-grid" id="fishGrid"></div>
+  </div>
+
+</div>
+
+<script>
+// ─── FISH DATABASE ───────────────────────────────────────────────────────────
+// minWidth, minDepth, minHeight all in cm; minLitres as calculated minimum
+const FISH = [
+  // Nano / desktop
+  { name:'Betta',          emoji:'🐠', minL:15,  minW:20, minD:15, minH:15, care:'Easy',    temp:'24–28°C', tags:['Nano','Solitary','Tropical'] },
+  { name:'Endler\'s Livebearer', emoji:'🐟', minL:20, minW:25, minD:20, minH:20, care:'Easy', temp:'22–28°C', tags:['Nano','Tropical','Schooling'] },
+  { name:'Pygmy Corydoras',emoji:'🐟', minL:20,  minW:30, minD:20, minH:20, care:'Easy',    temp:'22–26°C', tags:['Nano','Tropical','Bottom'] },
+  { name:'Chili Rasbora', emoji:'🐠', minL:20,  minW:30, minD:20, minH:20, care:'Moderate',temp:'22–28°C', tags:['Nano','Tropical','Schooling'] },
+  { name:'Celestial Pearl Danio', emoji:'🐟', minL:25, minW:35, minD:22, minH:22, care:'Easy', temp:'20–26°C', tags:['Nano','Tropical','Schooling'] },
+  { name:'Scarlet Badis',  emoji:'🐟', minL:25,  minW:30, minD:20, minH:20, care:'Moderate',temp:'22–27°C', tags:['Nano','Tropical','Predatory'] },
+
+  // Small community
+  { name:'Neon Tetra',     emoji:'🐠', minL:35,  minW:40, minD:25, minH:25, care:'Easy',    temp:'20–26°C', tags:['Community','Tropical','Schooling'] },
+  { name:'Guppy',          emoji:'🐟', minL:35,  minW:40, minD:25, minH:25, care:'Easy',    temp:'22–28°C', tags:['Community','Tropical','Livebearer'] },
+  { name:'Platy',          emoji:'🐟', minL:40,  minW:45, minD:25, minH:25, care:'Easy',    temp:'18–28°C', tags:['Community','Tropical','Livebearer'] },
+  { name:'Zebra Danio',    emoji:'🐟', minL:40,  minW:45, minD:25, minH:25, care:'Easy',    temp:'18–24°C', tags:['Community','Coldwater','Schooling'] },
+  { name:'Harlequin Rasbora', emoji:'🐠', minL:40, minW:45, minD:25, minH:25, care:'Easy', temp:'22–27°C', tags:['Community','Tropical','Schooling'] },
+  { name:'Otocinclus',     emoji:'🐡', minL:40,  minW:45, minD:25, minH:25, care:'Moderate',temp:'21–26°C', tags:['Community','Tropical','Algae Eater'] },
+  { name:'Corydoras',      emoji:'🐟', minL:45,  minW:50, minD:28, minH:28, care:'Easy',    temp:'22–26°C', tags:['Community','Tropical','Bottom'] },
+  { name:'White Cloud Minnow', emoji:'🐟', minL:40, minW:45, minD:25, minH:25, care:'Easy', temp:'14–22°C', tags:['Community','Coldwater','Schooling'] },
+  { name:'Cherry Barb',    emoji:'🐠', minL:40,  minW:45, minD:25, minH:25, care:'Easy',    temp:'23–27°C', tags:['Community','Tropical','Schooling'] },
+  { name:'Ember Tetra',    emoji:'🐠', minL:35,  minW:40, minD:25, minH:25, care:'Easy',    temp:'25–30°C', tags:['Community','Tropical','Schooling'] },
+
+  // Medium
+  { name:'Mollies',        emoji:'🐟', minL:55,  minW:55, minD:30, minH:30, care:'Easy',    temp:'24–28°C', tags:['Community','Tropical','Livebearer'] },
+  { name:'Swordtail',      emoji:'🐟', minL:55,  minW:55, minD:30, minH:30, care:'Easy',    temp:'22–28°C', tags:['Community','Tropical','Livebearer'] },
+  { name:'Dwarf Gourami',  emoji:'🐠', minL:60,  minW:60, minD:30, minH:30, care:'Easy',    temp:'25–28°C', tags:['Community','Tropical','Labyrinth'] },
+  { name:'Bolivian Ram',   emoji:'🐡', minL:75,  minW:60, minD:30, minH:30, care:'Moderate',temp:'24–28°C', tags:['Cichlid','Tropical','Pair'] },
+  { name:'German Blue Ram',emoji:'🐡', minL:80,  minW:60, minD:30, minH:30, care:'Advanced',temp:'27–30°C', tags:['Cichlid','Tropical','Pair'] },
+  { name:'Bristlenose Pleco', emoji:'🐡', minL:80, minW:60, minD:30, minH:25, care:'Easy', temp:'21–27°C', tags:['Community','Tropical','Algae Eater'] },
+  { name:'Cardinal Tetra', emoji:'🐠', minL:60,  minW:60, minD:30, minH:30, care:'Moderate',temp:'23–27°C', tags:['Community','Tropical','Schooling'] },
+  { name:'Kuhli Loach',    emoji:'🐟', minL:60,  minW:60, minD:30, minH:25, care:'Easy',    temp:'24–30°C', tags:['Community','Tropical','Bottom'] },
+  { name:'Rainbow Fish',   emoji:'🐠', minL:100, minW:80, minD:35, minH:35, care:'Easy',    temp:'24–28°C', tags:['Community','Tropical','Schooling'] },
+  { name:'Angelfish',      emoji:'🐡', minL:150, minW:60, minD:40, minH:50, care:'Moderate',temp:'25–30°C', tags:['Community','Tropical','Tall Tank'] },
+  { name:'Discus',         emoji:'🐡', minL:200, minW:60, minD:40, minH:55, care:'Advanced',temp:'28–31°C', tags:['Specialist','Tropical','Tall Tank'] },
+
+  // Larger / species tanks
+  { name:'Goldfish (Fancy)', emoji:'🐟', minL:100, minW:60, minD:35, minH:35, care:'Easy',  temp:'10–22°C', tags:['Coldwater','Messy','Schooling'] },
+  { name:'Goldfish (Common)', emoji:'🐟', minL:200, minW:80, minD:40, minH:40, care:'Easy', temp:'10–20°C', tags:['Coldwater','Messy','Active'] },
+  { name:'Convict Cichlid', emoji:'🐡', minL:120, minW:70, minD:35, minH:35, care:'Easy',   temp:'24–28°C', tags:['Cichlid','Tropical','Aggressive'] },
+  { name:'Firemouth Cichlid', emoji:'🐡', minL:120, minW:70, minD:35, minH:35, care:'Moderate', temp:'24–28°C', tags:['Cichlid','Tropical','Pair'] },
+  { name:'Keyhole Cichlid', emoji:'🐡', minL:120, minW:70, minD:35, minH:35, care:'Easy',   temp:'24–28°C', tags:['Cichlid','Tropical','Peaceful'] },
+  { name:'Geophagus',      emoji:'🐡', minL:200, minW:80, minD:40, minH:40, care:'Moderate',temp:'25–30°C', tags:['Cichlid','Tropical','Earth Eater'] },
+  { name:'Oscars',         emoji:'🐡', minL:300, minW:90, minD:45, minH:45, care:'Easy',    temp:'23–28°C', tags:['Large','Tropical','Predatory'] },
+  { name:'Jewel Cichlid',  emoji:'🐡', minL:100, minW:60, minD:35, minH:35, care:'Moderate',temp:'24–28°C', tags:['Cichlid','Tropical','Aggressive'] },
+  { name:'Pearl Gourami',  emoji:'🐠', minL:80,  minW:60, minD:30, minH:30, care:'Easy',    temp:'24–28°C', tags:['Community','Tropical','Labyrinth'] },
+  { name:'Honey Gourami',  emoji:'🐠', minL:60,  minW:55, minD:28, minH:28, care:'Easy',    temp:'24–28°C', tags:['Community','Tropical','Labyrinth'] },
+  { name:'Denison Barb',   emoji:'🐟', minL:150, minW:80, minD:35, minH:35, care:'Moderate',temp:'15–25°C', tags:['Community','Tropical','Schooling'] },
+  { name:'Tiger Barb',     emoji:'🐟', minL:60,  minW:55, minD:28, minH:28, care:'Easy',    temp:'20–26°C', tags:['Community','Tropical','Semi-aggressive'] },
+  { name:'Boesemani Rainbowfish', emoji:'🐠', minL:130, minW:80, minD:35, minH:35, care:'Easy', temp:'24–28°C', tags:['Community','Tropical','Schooling'] },
+];
+
+// ─── DOM REFS ────────────────────────────────────────────────────────────────
+const wSlider = document.getElementById('widthSlider');
+const dSlider = document.getElementById('depthSlider');
+const hSlider = document.getElementById('heightSlider');
+const wVal    = document.getElementById('wVal');
+const dVal    = document.getElementById('dVal');
+const hVal    = document.getElementById('hVal');
+const volNum  = document.getElementById('volNum');
+const volGal  = document.getElementById('volGal');
+const fishGrid = document.getElementById('fishGrid');
+const fishSubtitle = document.getElementById('fishSubtitle');
+
+// Tank faces
+const scene      = document.getElementById('tankScene');
+const faceFront  = document.getElementById('faceFront');
+const faceTop    = document.getElementById('faceTop');
+const faceRight  = document.getElementById('faceRight');
+const faceBottom = document.getElementById('faceBottom');
+
+// ─── TANK RENDER ─────────────────────────────────────────────────────────────
+const TANK_MAX_PX = 260; // max display dimension
+
+function updateTank() {
+  const wCm = +wSlider.value;
+  const dCm = +dSlider.value;
+  const hCm = +hSlider.value;
+
+  const scale = TANK_MAX_PX / Math.max(wCm, dCm, hCm);
+  const W = Math.round(wCm * scale);
+  const D = Math.round(dCm * scale);
+  const H = Math.round(hCm * scale);
+  const inset = Math.round(D * 0.5); // top/right inset for 3-D effect
+
+  scene.style.width  = (W + inset) + 'px';
+  scene.style.height = (H + inset) + 'px';
+
+  // Front face
+  faceFront.style.cssText += `
+    width:${W}px; height:${H}px;
+    bottom:0; left:0;
+  `;
+
+  // Top face (parallelogram via clip-path)
+  faceTop.style.cssText = `
+    width:${W}px; height:${inset}px;
+    bottom:${H}px; left:0;
+    transform: skewX(${-45 * (inset/D)}deg) scaleX(1);
+    transform-origin: bottom left;
+  `;
+
+  // Right face
+  faceRight.style.cssText = `
+    width:${inset}px; height:${H}px;
+    bottom:0; left:${W}px;
+    transform: skewY(${-45 * (inset/D)}deg);
+    transform-origin: top left;
+  `;
+
+  // Bottom face
+  faceBottom.style.cssText = `
+    width:${W}px; height:${inset}px;
+    bottom:0; left:0;
+    transform: skewX(${-45 * (inset/D)}deg);
+    transform-origin: bottom left;
+    opacity:0.5;
+  `;
+
+  // Volume
+  const litres = Math.round((wCm * dCm * hCm) / 1000);
+  const gallons = (litres * 0.264172).toFixed(1);
+  volNum.textContent = litres.toLocaleString();
+  volGal.textContent = gallons;
+
+  // Labels
+  wVal.textContent = wCm;
+  dVal.textContent = dCm;
+  hVal.textContent = hCm;
+
+  updateFish(litres, wCm, dCm, hCm);
+}
+
+// ─── FISH FILTER ─────────────────────────────────────────────────────────────
+function updateFish(litres, wCm, dCm, hCm) {
+  const compatible = FISH.filter(f =>
+    litres >= f.minL &&
+    wCm    >= f.minW &&
+    dCm    >= f.minD &&
+    hCm    >= f.minH
+  );
+
+  fishGrid.innerHTML = '';
+
+  if (compatible.length === 0) {
+    fishSubtitle.textContent = 'Increase tank size to see compatible fish';
+    fishGrid.innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1">
+        <div class="big">🪣</div>
+        <p>Tank too small for most fish.<br>Try increasing the dimensions!</p>
+      </div>`;
+    return;
+  }
+
+  fishSubtitle.textContent = `${compatible.length} species suitable for a ${litres}L tank`;
+
+  compatible.forEach((f, i) => {
+    const card = document.createElement('div');
+    card.className = 'fish-card';
+    card.style.animationDelay = (i * 0.04) + 's';
+    card.innerHTML = `
+      <div class="fish-emoji">${f.emoji}</div>
+      <div class="fish-name">${f.name}</div>
+      <div class="fish-meta">
+        <span>${f.care}</span>
+        <span>${f.temp}</span>
+        ${f.tags.map(t => `<span>${t}</span>`).join('')}
+      </div>
+    `;
+    fishGrid.appendChild(card);
+  });
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+[wSlider, dSlider, hSlider].forEach(s => s.addEventListener('input', updateTank));
+updateTank();
+</script>
+</body>
+</html>
