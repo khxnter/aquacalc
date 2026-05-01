@@ -72,6 +72,11 @@
     background: var(--glass); border: 1px solid var(--glass-border);
     border-radius: 16px; padding: 28px; backdrop-filter: blur(4px);
   }
+  @media(max-width:420px) {
+    .panel {
+      padding:15px;
+    }
+  }
   .panel h2 { font-family: 'Playfair Display', serif; font-size: 1.1rem; margin-bottom: 22px; letter-spacing: 1px; }
   .full-width { grid-column: 1 / -1; }
 
@@ -729,7 +734,7 @@ const faceTop    = document.getElementById('faceTop');
 const faceRight  = document.getElementById('faceRight');
 const faceBottom = document.getElementById('faceBottom');
 
-const TANK_MAX_PX = 260;
+const TANK_MAX_PX = 160;
 
 function updateTank() {
   const wCm = +wSlider.value, dCm = +dSlider.value, hCm = +hSlider.value;
